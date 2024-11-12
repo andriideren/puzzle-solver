@@ -1,0 +1,112 @@
+{
+    "extends": [
+      "next/core-web-vitals",
+      "plugin:react/recommended",
+      "plugin:react-hooks/recommended",
+      "plugin:@typescript-eslint/recommended",
+      "plugin:prettier/recommended"
+    ],
+    "plugins": [
+      "react",
+      "react-hooks",
+      "@typescript-eslint",
+      "simple-import-sort",
+      "import"
+    ],
+    "parser": "@typescript-eslint/parser",
+    "rules": {
+      "no-shadow": "warn",
+      "no-restricted-imports": [
+        "error",
+        {
+          "patterns": [{
+            "group": ["@mui/*/*/*"],
+            "message": "MUI 3-level imports are restricted"
+          }]
+        }
+      ],
+      "@typescript-eslint/no-explicit-any": "warn",
+      "@typescript-eslint/no-unused-vars": "warn",
+      "react-hooks/exhaustive-deps": "off",
+      "simple-import-sort/exports": "error",
+      "simple-import-sort/imports": [
+        "warn",
+        {
+          "groups": [
+            // Node.js builtins. You could also generate this regex if you use a `.js` config.
+            // For example: `^(${require("module").builtinModules.join("|")})(/|$)`
+            [
+              "^(assert|buffer|child_process|cluster|console|constants|crypto|dgram|dns|domain|events|fs|http|https|module|net|os|path|punycode|querystring|readline|repl|stream|string_decoder|sys|timers|tls|tty|url|util|vm|zlib|freelist|v8|process|async_hooks|http2|perf_hooks)(/.*|$)"
+            ],
+            //React
+            [
+              "react"
+            ],
+            //React secondary
+            [
+              "(react-[^s]+)"
+            ],
+            //Next.js
+            [
+              "(next)|(next/[^s]+)"
+            ],
+            //Next.js secondary
+            [
+              "(next-[^s]+)"
+            ],
+            //Tanstack
+            [
+              "@tanstack/[^s]+"
+            ],
+            // Packages
+            [
+              "^\\w"
+            ],
+            // API packages.
+            [
+              "@/api/"
+            ],
+            // Internal components packages.
+            [
+              "@/components/"
+            ],
+            // Internal utils packages.
+            [
+              "@/utils/"
+            ],
+            // Internal packages.
+            [
+              "^(@|config/)(/*|$)"
+            ],
+            // Side effect imports.
+            [
+              "^\\u0000"
+            ],
+            // Parent imports. Put `..` last.
+            [
+              "^\\.\\.(?!/?$)",
+              "^\\.\\./?$"
+            ],
+            // Other relative imports. Put same-folder imports and `.` last.
+            [
+              "^\\./(?=.*/)(?!/?$)",
+              "^\\.(?!/?$)",
+              "^\\./?$"
+            ],
+            //MUI Joy components
+            [
+              "(@mui/joy)|(@mui/joy/)"
+            ],
+            //icons
+            [
+              "(@mui/icons-material)|(@mui/icons-material/)"
+            ],
+            // Style imports.
+            [
+              "^.+\\.s?css$"
+            ]
+          ]
+        }
+      ]
+    }
+  }
