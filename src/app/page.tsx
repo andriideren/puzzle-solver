@@ -1,5 +1,5 @@
 'use client';
-import { Github, Loader2 } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import React, { useActionState, useEffect, useMemo, useState } from 'react';
 import { scroller } from 'react-scroll';
 
@@ -24,12 +24,8 @@ import {
 } from '@/components/ui/select';
 import { PuzzleElementPreview } from '@/components/ui/shape';
 
-import {
-	emptySolution,
-	getPredefinedArea,
-	getPredefinedElements,
-	sets,
-} from '@/lib/game';
+import { emptySolution, getPredefinedElements, sets } from '@/lib/game';
+import { mergeToArea } from '@/lib/geometry';
 import { SolutionResponse } from '@/models/PuzzleSolution';
 
 import { findSolution } from './actions';
@@ -40,8 +36,10 @@ const initialState: SolutionResponse = {
 
 export default function Home() {
 	const [setId, setSetId] = useState(1);
-	const elements = useMemo(() => getPredefinedElements(setId), [setId]);
 	const [solvedAt, setSolvedAt] = useState(0);
+	const [animateX, setX] = useState(0);
+	const [animateY, setY] = useState(0);
+	const elements = useMemo(() => getPredefinedElements(setId), [setId]);
 
 	const [timer, setTimer] = useState(0);
 
@@ -55,6 +53,19 @@ export default function Home() {
 		if (isPending) {
 			intervalId = setInterval(() => {
 				setTimer((tValue) => tValue + 0.2);
+				setX((xVal) => {
+					if (xVal < emptySolution.area.width - 4) {
+						return xVal + 1;
+					}
+
+					setY((yVal) => {
+						if (yVal < emptySolution.area.height - 2)
+							return yVal + 1;
+						return 0;
+					});
+
+					return 0;
+				});
 			}, 200);
 		} else {
 			setSolvedAt(Date.now());
@@ -69,9 +80,23 @@ export default function Home() {
 
 		setSolvedAt(0);
 		setTimer(0);
+		setX(0);
+		setY(0);
 	};
 
-	const gameArea = state?.solution?.area ?? emptySolution.area;
+	const gameArea = isPending
+		? mergeToArea(
+				{
+					shape: [
+						[1, 2, 3, -1],
+						[-1, 6, 7, 8],
+					],
+				},
+				emptySolution.area,
+				animateX,
+				animateY
+			)
+		: (state?.solution?.area ?? emptySolution.area);
 
 	return (
 		<div className="items-center justify-items-center min-h-screen p-6 gap-16 font-[family-name:var(--font-geist-sans)]">
@@ -136,7 +161,11 @@ export default function Home() {
 								<h4 className="text-xl font-semibold tracking-tight">
 									{'Puzzle Area'}
 								</h4>
-								<Badge>{`${gameArea.width} x ${gameArea.height}`}</Badge>
+								{gameArea ? (
+									<Badge>{`${gameArea.width} x ${gameArea.height}`}</Badge>
+								) : (
+									<></>
+								)}
 								<h4 className="text-xl font-semibold tracking-tight">
 									{solvedAt || isPending
 										? `${isPending ? 'Solving ' : 'Solved in '} ${timer.toFixed(2)}s`
@@ -187,11 +216,15 @@ export default function Home() {
 							</div>
 						</div>
 						<div className="py-2">
-							<PuzzleAreaShape
-								key={`area_${solvedAt}`}
-								area={gameArea}
-								elements={elements}
-							/>
+							{gameArea ? (
+								<PuzzleAreaShape
+									key={`area_${solvedAt}`}
+									area={gameArea}
+									elements={elements}
+								/>
+							) : (
+								<></>
+							)}
 						</div>
 					</CardContent>
 				</Card>

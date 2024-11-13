@@ -149,3 +149,20 @@ export function mergeShapes(
 
 	return merged;
 }
+
+export function mergeToArea(
+	from: Shaped,
+	to: PuzzleArea,
+	x: number,
+	y: number
+): PuzzleArea | false {
+	const merged = mergeShapes(from, to, x, y);
+
+	if (!merged) return false;
+
+	return {
+		shape: merged.shape,
+		width: to.width,
+		height: to.height,
+	};
+}
