@@ -3,7 +3,7 @@ import _ from 'lodash';
 import { Shaped, ShapeVariations } from '@/models/common';
 import { PuzzleArea } from '@/models/PuzzleArea';
 import { PuzzleElement } from '@/models/PuzzleElement';
-import { PuzzleSolution } from '@/models/PuzzleSolution';
+import { PuzzleSolution, SolutionProgress } from '@/models/PuzzleSolution';
 
 import { solutionAccuracy } from './game';
 import {
@@ -50,6 +50,7 @@ export function initSolution(
 		area: area,
 		unsolved: variations,
 		steps: 0,
+		isFinal: false,
 	};
 }
 
@@ -119,25 +120,21 @@ export function placePuzzleElement(
 
 export function solvePuzzle(
 	solution: PuzzleSolution,
-	result: PuzzleSolution[],
-	topSolution: PuzzleSolution[],
-	setTopSolution: (top: PuzzleSolution) => void
+	progress: SolutionProgress
 ) {
-	if (solution.unsolved.length == solutionAccuracy) {
-		result.push(solution);
-		topSolution[0] = solution;
-		setTopSolution(solution);
+	if (solution.isFinal) {
+		progress.solution = solution;
+		progress.onProgress(solution);
 		return;
 	}
 
-	const top = topSolution[0];
-
 	if (
 		solution.unsolved.length <= 3 &&
-		(!top || top.unsolved.length > solution.unsolved.length)
+		(!progress.solution ||
+			progress.solution.unsolved.length > solution.unsolved.length)
 	) {
-		topSolution[0] = solution;
-		setTopSolution(solution);
+		progress.solution = solution;
+		progress.onProgress(solution);
 	}
 
 	const variations = solution.unsolved[0];
@@ -145,7 +142,7 @@ export function solvePuzzle(
 	const step = solution.steps + 1;
 
 	for (let i = 0; i < variations.variations.length; i++) {
-		if (result.length > 0) return;
+		if (progress.solution.isFinal) return;
 
 		const areas = placePuzzleElement(
 			solution.area,
@@ -154,15 +151,16 @@ export function solvePuzzle(
 
 		if (areas.length > 0) {
 			for (let j = 0; j < areas.length; j++) {
-				if (result.length > 0) return;
+				if (progress.solution.isFinal) return;
 
 				const iSolution: PuzzleSolution = {
 					area: areas[j],
 					unsolved: unsolved,
 					steps: step,
+					isFinal: unsolved.length == solutionAccuracy,
 				};
 
-				solvePuzzle(iSolution, result, topSolution, setTopSolution);
+				solvePuzzle(iSolution, progress);
 			}
 		}
 	}

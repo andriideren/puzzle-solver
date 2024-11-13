@@ -1,6 +1,6 @@
 'use client';
 import { Loader2 } from 'lucide-react';
-import React, { useActionState, useEffect, useState } from 'react';
+import React, { useActionState, useEffect, useMemo, useState } from 'react';
 
 import Image from 'next/image';
 
@@ -23,22 +23,24 @@ import {
 } from '@/components/ui/select';
 import { PuzzleElementPreview } from '@/components/ui/shape';
 
-import { getPredefinedArea, getPredefinedElements, sets } from '@/lib/game';
+import {
+	emptySolution,
+	getPredefinedArea,
+	getPredefinedElements,
+	sets,
+} from '@/lib/game';
 import { SolutionResponse } from '@/models/PuzzleSolution';
 
 import { findSolution } from './actions';
 
 const initialState: SolutionResponse = {
-	solution: {
-		area: getPredefinedArea(),
-		unsolved: [],
-		steps: 0,
-	},
+	solution: emptySolution,
 };
 
 export default function Home() {
 	const [setId, setSetId] = useState(1);
-	const [ts, setTs] = useState(0);
+	const elements = useMemo(() => getPredefinedElements(setId), [setId]);
+	const [solvedAt, setSolvedAt] = useState(0);
 
 	const [timer, setTimer] = useState(0);
 
@@ -53,26 +55,22 @@ export default function Home() {
 			intervalId = setInterval(() => {
 				setTimer((tValue) => tValue + 0.2);
 			}, 200);
+		} else {
+			setSolvedAt(Date.now());
 		}
 		return () => {
 			if (intervalId) clearInterval(intervalId);
 		};
 	}, [isPending]);
 
-	const gameArea = state?.solution?.area ?? getPredefinedArea();
-
 	const onReset = () => {
-		state.solution = {
-			area: getPredefinedArea(),
-			unsolved: [],
-			steps: 0,
-		};
+		state.solution = emptySolution;
 
-		setTs(Date.now());
+		setSolvedAt(0);
 		setTimer(0);
 	};
 
-	const elements = getPredefinedElements(setId);
+	const gameArea = state?.solution?.area ?? emptySolution.area;
 
 	return (
 		<div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-4 pb-16 gap-16 font-[family-name:var(--font-geist-sans)]">
@@ -154,7 +152,7 @@ export default function Home() {
 									className="flex flex-row gap-2"
 									action={formAction}
 									onSubmit={() => {
-										setTimer(0);
+										onReset();
 									}}
 								>
 									<input
@@ -178,7 +176,7 @@ export default function Home() {
 						</div>
 						<div className="py-2">
 							<PuzzleAreaShape
-								key={`are_${ts}`}
+								key={`area_${solvedAt}`}
 								area={gameArea}
 								elements={elements}
 							/>

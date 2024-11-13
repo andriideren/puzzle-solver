@@ -32,6 +32,13 @@ export function getPredefinedArea(): PuzzleArea {
 	};
 }
 
+export const emptySolution = {
+	area: getPredefinedArea(),
+	unsolved: [],
+	steps: 0,
+	isFinal: false,
+};
+
 const set0: PuzzleElement[] = [
 	{
 		shape: [
