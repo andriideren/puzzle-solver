@@ -6,3 +6,7 @@ export interface PuzzleSolution {
 	unsolved: ShapeVariations[];
 	steps: number;
 }
+
+export interface SolutionResponse {
+	solution: PuzzleSolution;
+}

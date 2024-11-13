@@ -59,7 +59,7 @@ export function rotateCW(source: Shaped): Shaped {
 	return { shape: arr };
 }
 
-export function flipV(source: Shaped): Shaped {
+export function flipX(source: Shaped): Shaped {
 	const width = getShapedWidthN(source);
 	const height = getShapedHeightN(source);
 
@@ -70,6 +70,23 @@ export function flipV(source: Shaped): Shaped {
 	for (let ri = 0; ri < source.shape.length; ri++) {
 		for (let ci = 0; ci < source.shape[ri].length; ci++) {
 			arr[height - ri - 1][ci] = source.shape[ri][ci];
+		}
+	}
+
+	return { shape: arr };
+}
+
+export function flipY(source: Shaped): Shaped {
+	const width = getShapedWidthN(source);
+	const height = getShapedHeightN(source);
+
+	const arr = Array.from({ length: height }, () =>
+		Array.from({ length: width }, () => -1)
+	);
+
+	for (let ri = 0; ri < source.shape.length; ri++) {
+		for (let ci = 0; ci < source.shape[ri].length; ci++) {
+			arr[ri][width - ci - 1] = source.shape[ri][ci];
 		}
 	}
 
