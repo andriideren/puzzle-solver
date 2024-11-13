@@ -1,6 +1,7 @@
 'use client';
-import { Loader2 } from 'lucide-react';
+import { Github, Loader2 } from 'lucide-react';
 import React, { useActionState, useEffect, useMemo, useState } from 'react';
+import { scroller } from 'react-scroll';
 
 import Image from 'next/image';
 
@@ -73,9 +74,9 @@ export default function Home() {
 	const gameArea = state?.solution?.area ?? emptySolution.area;
 
 	return (
-		<div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-4 pb-16 gap-16 font-[family-name:var(--font-geist-sans)]">
+		<div className="items-center justify-items-center min-h-screen p-6 gap-16 font-[family-name:var(--font-geist-sans)]">
 			<main className="flex flex-col gap-8 row-start-2 items-center w-full">
-				<Card className="w-10/12">
+				<Card className="w-full md:w-10/12">
 					<CardHeader>
 						<CardTitle className="text-2xl font-semibold">
 							{'Geometric Puzzle Solver'}
@@ -87,7 +88,7 @@ export default function Home() {
 						</CardDescription>
 					</CardHeader>
 					<CardContent>
-						<div className="flex flex-row gap-2 scroll-m-20 border-y py-2 justify-between">
+						<div className="flex flex-row flex-wrap gap-2 scroll-m-20 border-y py-2 justify-between">
 							<div className="flex flex-row gap-2 py-1">
 								<h4 className="text-xl font-semibold tracking-tight">
 									{'Puzzle Elements'}
@@ -100,7 +101,7 @@ export default function Home() {
 									setSetId(parseInt(selected));
 								}}
 							>
-								<SelectTrigger className="w-[200px]">
+								<SelectTrigger className="w-full md:w-[200px]">
 									<SelectValue placeholder="Select puzzle set" />
 								</SelectTrigger>
 								<SelectContent>
@@ -127,14 +128,19 @@ export default function Home() {
 								)),
 							]}
 						</div>
-						<div className="flex flex-row flex-wrap gap-2 scroll-m-20 border-y py-2 justify-between">
-							<div className="flex flex-row gap-2 py-2">
+						<div
+							id="puzzle-area"
+							className="flex flex-row flex-wrap gap-2 scroll-m-20 border-y py-2 justify-between"
+						>
+							<div className="flex flex-row flex-wrap gap-2 py-2">
 								<h4 className="text-xl font-semibold tracking-tight">
 									{'Puzzle Area'}
 								</h4>
 								<Badge>{`${gameArea.width} x ${gameArea.height}`}</Badge>
 								<h4 className="text-xl font-semibold tracking-tight">
-									{`${isPending ? 'Solving ' : 'Solved in '} ${timer.toFixed(2)}s`}
+									{solvedAt || isPending
+										? `${isPending ? 'Solving ' : 'Solved in '} ${timer.toFixed(2)}s`
+										: 'Not solved yet'}
 								</h4>
 							</div>
 							<div className="flex flex-row gap-2 pt-1">
@@ -153,6 +159,12 @@ export default function Home() {
 									action={formAction}
 									onSubmit={() => {
 										onReset();
+
+										scroller.scrollTo('puzzle-area', {
+											duration: 300,
+											smooth: true,
+											containerId: 'body',
+										});
 									}}
 								>
 									<input
@@ -184,7 +196,53 @@ export default function Home() {
 					</CardContent>
 				</Card>
 			</main>
-			<footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
+			<footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center p-6">
+				<p>Powered by:</p>
+				<a
+					className="flex items-center gap-2 hover:underline hover:underline-offset-4"
+					href="https://react.dev/"
+					target="_blank"
+					rel="noopener noreferrer"
+				>
+					<Image
+						aria-hidden
+						src="/react.svg"
+						alt="React icon"
+						width={16}
+						height={16}
+					/>
+					React
+				</a>
+				<a
+					className="flex items-center gap-2 hover:underline hover:underline-offset-4"
+					href="https://nextjs.org/"
+					target="_blank"
+					rel="noopener noreferrer"
+				>
+					<Image
+						aria-hidden
+						src="/next.svg"
+						alt="Next.js icon"
+						width={16}
+						height={16}
+					/>
+					Next.js
+				</a>
+				<a
+					className="flex items-center gap-2 hover:underline hover:underline-offset-4"
+					href="https://ui.shadcn.com/"
+					target="_blank"
+					rel="noopener noreferrer"
+				>
+					<Image
+						aria-hidden
+						src="/globe.svg"
+						alt="shadcn icon"
+						width={16}
+						height={16}
+					/>
+					shadcn/ui
+				</a>
 				<a
 					className="flex items-center gap-2 hover:underline hover:underline-offset-4"
 					href="https://github.com/andriideren/puzzle-solver"
@@ -193,8 +251,8 @@ export default function Home() {
 				>
 					<Image
 						aria-hidden
-						src="/globe.svg"
-						alt="Globe icon"
+						src="/github.svg"
+						alt="GitHub icon"
 						width={16}
 						height={16}
 					/>
