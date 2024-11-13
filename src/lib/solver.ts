@@ -6,7 +6,6 @@ import { PuzzleElement } from '@/models/PuzzleElement';
 import { PuzzleSolution } from '@/models/PuzzleSolution';
 
 import {
-	cloneArea,
 	flipV,
 	getFlatSize,
 	mergeShapes,

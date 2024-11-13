@@ -1,12 +1,10 @@
 'use client';
 import { Loader2 } from 'lucide-react';
-import React, { useActionState, useEffect, useState } from 'react';
+import React, { useActionState, useState } from 'react';
 
 import { useFormStatus } from 'react-dom';
 
 import Image from 'next/image';
-
-import _ from 'lodash';
 
 import { PuzzleAreaShape } from '@/components/ui/area';
 import { Badge } from '@/components/ui/badge';
@@ -21,9 +19,7 @@ import {
 import { PuzzleElementPreview } from '@/components/ui/shape';
 
 import { getPredefinedArea, getPredefinedElements } from '@/lib/game';
-import { initSolution, solvePuzzle } from '@/lib/solver';
 import { PuzzleArea } from '@/models/PuzzleArea';
-import { PuzzleSolution } from '@/models/PuzzleSolution';
 
 import { findSolution } from './actions';
 
