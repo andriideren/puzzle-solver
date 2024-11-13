@@ -2,8 +2,6 @@
 import { Loader2 } from 'lucide-react';
 import React, { useActionState, useEffect, useState } from 'react';
 
-import { useFormStatus } from 'react-dom';
-
 import Image from 'next/image';
 
 import { PuzzleAreaShape } from '@/components/ui/area';
@@ -19,9 +17,7 @@ import {
 import {
 	Select,
 	SelectContent,
-	SelectGroup,
 	SelectItem,
-	SelectLabel,
 	SelectTrigger,
 	SelectValue,
 } from '@/components/ui/select';
@@ -55,7 +51,7 @@ export default function Home() {
 		let intervalId: NodeJS.Timeout | undefined;
 		if (isPending) {
 			intervalId = setInterval(() => {
-				setTimer((timer) => timer + 0.2);
+				setTimer((tValue) => tValue + 0.2);
 			}, 200);
 		}
 		return () => {
