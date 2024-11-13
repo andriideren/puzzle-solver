@@ -45,15 +45,18 @@ function SolveButton() {
 
 export default function Home() {
 	const elements = getPredefinedElements();
-	const [gameArea, setGameArea] = useState(getPredefinedArea());
+	const [ts, setTs] = useState(0);
 
 	const [state, formAction, isPending] = useActionState(
 		findSolution,
 		initialState
 	);
 
+	const gameArea = state?.area ?? getPredefinedArea();
+
 	const onReset = () => {
-		setGameArea(getPredefinedArea());
+		state.area = getPredefinedArea();
+		setTs(Date.now());
 	};
 
 	return (
@@ -110,7 +113,8 @@ export default function Home() {
 						</div>
 						<div className="py-2">
 							<PuzzleAreaShape
-								area={state?.area ?? gameArea}
+								key={`are_${ts}`}
+								area={gameArea}
 								elements={elements}
 							/>
 						</div>
