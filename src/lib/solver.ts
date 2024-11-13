@@ -156,8 +156,6 @@ export function solvePuzzle(
 			for (let j = 0; j < areas.length; j++) {
 				if (result.length > 0) return;
 
-				console.log(`Step: ${step} Unsolved: ${unsolved.length}`);
-
 				const iSolution: PuzzleSolution = {
 					area: areas[j],
 					unsolved: unsolved,
