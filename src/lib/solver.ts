@@ -18,13 +18,13 @@ import {
 	shapesEquals,
 } from './geometry';
 
-// experimental sorting to compare with optimal
+// experimental sorting to compare with greedy sorting, no practical use
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function prepareUnsortedVariations(elements: PuzzleElement[]) {
 	return elements.map((el) => prepareVariations(el));
 }
 
-// experimental sorting to compare with optimal
+// experimental sorting to compare with greedy sorting, no practical use
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function prepareAscSortedVariations(elements: PuzzleElement[]) {
 	return _.sortBy(elements, (el) => getFlatSize(el)).map((el) =>
@@ -32,7 +32,7 @@ function prepareAscSortedVariations(elements: PuzzleElement[]) {
 	);
 }
 
-// experimental sorting to compare with optimal
+// experimental sorting to compare with greedy sorting, no practical use
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function prepareMixedVariations(elements: PuzzleElement[]) {
 	const variations = prepareGreedSortedVariations(elements);
@@ -43,6 +43,7 @@ function prepareMixedVariations(elements: PuzzleElement[]) {
 }
 
 function prepareGreedSortedVariations(elements: PuzzleElement[]) {
+	//random direct or reverse order is used just-for-fun to randomize output for some sets
 	return _.sortBy(
 		Math.random() > 0.5 ? elements.reverse() : elements,
 		(el) => getFlatSize(el) * -1
@@ -146,15 +147,21 @@ export function solvePuzzle(
 	progress: SolutionProgress,
 	options?: SolutionOptions | undefined
 ) {
-	const areaSize = solution.area.width * solution.area.height;
-	const elementsSize = _.sum(
-		solution.unsolved.map((element) => getFlatSize(element.variations[0]))
-	);
+	//check applied only on starting call to reduce computation everhead
+	if (progress.steps == 0) {
+		const areaSize = solution.area.width * solution.area.height;
+		const elementsSize = _.sum(
+			solution.unsolved.map((element) =>
+				getFlatSize(element.variations[0])
+			)
+		);
 
-	if (elementsSize > areaSize) {
-		progress.message = 'Puzzle unsolvable. Elements area is too big';
-		progress.onProgress(solution);
-		return;
+		if (elementsSize > areaSize) {
+			progress.message =
+				'Puzzle unsolvable. Total elements area is too big';
+			progress.onProgress(solution);
+			return;
+		}
 	}
 
 	if (solution.isFinal) {
