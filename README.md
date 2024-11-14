@@ -1,8 +1,8 @@
 # About project
 This demo application was implemented to solve geometric puzzles using backtracking algorithm with additiona; "greedy" strategy to reduce practical computing time
 
-# How to run
-Prerequisites: `Node.js v20+`, `npm`
+# Prerequisites
+To build and run project `Node.js v20+` and `npm` are required
 
 # How to run
 To get started first clone repository using terminal
@@ -25,7 +25,7 @@ npm run start
 Open [app](https://localhost:3000) in your browser
 
 # Run tests
-To run Jest test execute in terminal (after repository cloned and packages restored)
+To run Jest tests execute in terminal (after repository cloned and packages restored)
 ```
 npm run test
 ```
