@@ -7,6 +7,7 @@ import Image from 'next/image';
 import { SolutionResponse } from '@/models/PuzzleSolution';
 
 import {
+	createArea,
 	defaultSetId,
 	emptySolution,
 	getPredefinedSet,
@@ -19,6 +20,7 @@ import {
 } from '@/lib/game';
 import { generateElementsSet } from '@/lib/generator';
 
+import AboutModal from '@/components/ui/about';
 import { AnimatePuzzleArea, PuzzleAreaShape } from '@/components/ui/area';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -45,6 +47,7 @@ import { Loader2, RefreshCw } from 'lucide-react';
 const initialState: SolutionResponse = {
 	solution: emptySolution,
 	elements: [],
+	processed: false,
 };
 
 export default function Home() {
@@ -79,6 +82,7 @@ export default function Home() {
 		state.solution = emptySolution;
 		state.steps = 0;
 		state.message = '';
+		state.processed = false;
 
 		setSolvedAt(-1);
 		setTimer(0);
@@ -97,7 +101,9 @@ export default function Home() {
 		setGameSetJson(JSON.stringify(generatedSet));
 	};
 
-	const gameArea = state?.solution?.area ?? emptySolution.area;
+	const gameArea =
+		(state?.processed ? state?.solution?.area : null) ??
+		createArea(gameSet.width, gameSet.height);
 
 	const solvedInSteps = state?.steps ?? 0;
 	const hasError =
@@ -108,14 +114,21 @@ export default function Home() {
 			<main className="flex flex-col gap-8 row-start-2 items-center w-full">
 				<Card className="w-full md:w-10/12">
 					<CardHeader>
-						<CardTitle className="text-2xl font-semibold">
-							{'Geometric Puzzle Solver'}
-						</CardTitle>
-						<CardDescription>
-							{
-								'Demo app solves geometric puzzle game using Greedy Backtracking algorithm (read About for more details)'
-							}
-						</CardDescription>
+						<div className="flex flex-row flex-wrap gap-2 items-center justify-between">
+							<div>
+								<CardTitle className="text-2xl font-semibold">
+									{'Geometric Puzzle Solver'}
+								</CardTitle>
+								<CardDescription>
+									{
+										'Demo app solves geometric puzzle game using Greedy Backtracking algorithm (read About for more details)'
+									}
+								</CardDescription>
+							</div>
+							<div>
+								<AboutModal />
+							</div>
+						</div>
 					</CardHeader>
 					<CardContent>
 						<div className="flex flex-row flex-wrap gap-2 scroll-m-20 border-y py-2 justify-between">

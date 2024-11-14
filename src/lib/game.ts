@@ -3,7 +3,7 @@ import { PuzzleElement } from '@/models/PuzzleElement';
 import { PuzzleSet } from '@/models/PuzzleSet';
 export const maxTimeout = 120000;
 export const maxElementWidthN = 4;
-export const minElementWidthN = 4;
+export const minElementWidthN = 3;
 export const maxElementHeightN = 2;
 export const blockSizePx = 40;
 export const blockSpacePx = 2;

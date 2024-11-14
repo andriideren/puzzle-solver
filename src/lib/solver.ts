@@ -18,36 +18,42 @@ import {
 	shapesEquals,
 } from './geometry';
 
+// experimental sorting to compare with optimal
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function prepareUnsortedVariations(elements: PuzzleElement[]) {
 	return elements.map((el) => prepareVariations(el));
 }
 
-function prepareDescSortedVariations(elements: PuzzleElement[]) {
-	return _.sortBy(
-		Math.random() > 0.5 ? elements.reverse() : elements,
-		(el) => getFlatSize(el) * -1
-	).map((el) => prepareVariations(el));
-}
-
+// experimental sorting to compare with optimal
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function prepareAscSortedVariations(elements: PuzzleElement[]) {
 	return _.sortBy(elements, (el) => getFlatSize(el)).map((el) =>
 		prepareVariations(el)
 	);
 }
 
+// experimental sorting to compare with optimal
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function prepareMixedVariations(elements: PuzzleElement[]) {
-	const variations = prepareDescSortedVariations(elements);
+	const variations = prepareGreedSortedVariations(elements);
 	const temp = variations[0];
 	variations[0] = variations[2];
 	variations[2] = temp;
 	return variations;
 }
 
+function prepareGreedSortedVariations(elements: PuzzleElement[]) {
+	return _.sortBy(
+		Math.random() > 0.5 ? elements.reverse() : elements,
+		(el) => getFlatSize(el) * -1
+	).map((el) => prepareVariations(el));
+}
+
 export function initSolution(
 	area: PuzzleArea,
 	elements: PuzzleElement[]
 ): PuzzleSolution {
-	const variations = prepareDescSortedVariations(elements);
+	const variations = prepareGreedSortedVariations(elements);
 
 	return {
 		area: area,

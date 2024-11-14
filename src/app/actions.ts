@@ -43,11 +43,13 @@ export async function findSolution(
 								elements: gameSet.elements,
 								solution: solution,
 								steps: progress.steps,
+								processed: true,
 							});
 					},
 					onTimeout: () => {
 						resolve({
 							message: 'Not solved. Cancelled due to timeout',
+							processed: true,
 						});
 					},
 				};
@@ -61,14 +63,19 @@ export async function findSolution(
 					elements: gameSet.elements,
 					solution: progress.solution,
 					steps: progress.steps,
+					processed: true,
 				});
 			} else {
-				resolve({ message: 'Not solved. Game set not found' });
+				resolve({
+					message: 'Not solved. Game set not found',
+					processed: true,
+				});
 			}
 		} catch (error) {
 			resolve({
 				message:
 					error?.toString() ?? 'Not solved. Internal server error',
+				processed: true,
 			});
 		}
 	});

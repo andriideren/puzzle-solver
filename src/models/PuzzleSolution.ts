@@ -13,6 +13,7 @@ export interface SolutionResponse {
 	elements?: PuzzleElement[] | null | undefined;
 	steps?: number | undefined;
 	message?: string | null | undefined;
+	processed: boolean;
 }
 
 export interface SolutionProgress {
