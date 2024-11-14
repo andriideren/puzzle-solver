@@ -10,7 +10,7 @@ import {
 	solvePuzzle,
 } from '@/lib/solver';
 
-import { describe, expect, test } from '@jest/globals';
+import { describe, expect, jest, test } from '@jest/globals';
 
 describe('geometry module', () => {
 	test('returns placed element', () => {
@@ -38,7 +38,6 @@ describe('geometry module', () => {
 	test('returns unsolved solution if elements not feet', () => {
 		const tooBigSet = generateElementsSet(3, 4, 2, 12, 5);
 		const variations = tooBigSet.elements.map((element) => {
-			console.dir(element ?? 'wrong');
 			return prepareVariations(element);
 		});
 
@@ -59,6 +58,44 @@ describe('geometry module', () => {
 
 		expect(progress.solution.isFinal).toBe(false);
 		expect(progress.message).toBeDefined();
+	});
+
+	test('progress callback is called', () => {
+		const variations = prepareVariations({
+			shape: [
+				[8, 8, 8, 8],
+				[8, -1, -1, -1],
+			],
+		});
+
+		const solution: PuzzleSolution = {
+			area: {
+				shape: [
+					[0, 1, 1, 1, 4, 4, 4, 4, 9, 9],
+					[0, 0, 1, 1, 2, 4, 7, 7, 7, 9],
+					[0, 2, 2, 2, 2, 3, 3, 7, 9, 9],
+					[5, 5, 5, 5, 6, 3, 3, 3, 3, -1],
+					[5, 5, 6, 6, 6, 6, -1, -1, -1, -1],
+				],
+				width: 10,
+				height: 5,
+			},
+			unsolved: [variations],
+			isFinal: false,
+		};
+
+		const progressCallback = jest.fn(() => {});
+
+		const progress: SolutionProgress = {
+			solution: solution,
+			steps: 0,
+			onProgress: progressCallback,
+			onTimeout: () => {},
+		};
+
+		solvePuzzle(solution, progress);
+
+		expect(progressCallback).toBeCalled();
 	});
 
 	test('returns final solution', () => {
