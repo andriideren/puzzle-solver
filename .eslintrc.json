@@ -62,9 +62,17 @@
             [
               "^\\w"
             ],
+            // Models packages.
+            [
+              "@/models/"
+            ],
             // API packages.
             [
               "@/api/"
+            ],
+            // Logic packages.
+            [
+              "@/lib/"
             ],
             // Internal components packages.
             [
@@ -99,7 +107,7 @@
             ],
             //icons
             [
-              "(@mui/icons-material)|(@mui/icons-material/)"
+              "(lucide-react)|(lucide-react/)"
             ],
             // Style imports.
             [

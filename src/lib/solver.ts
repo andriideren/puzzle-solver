@@ -3,9 +3,12 @@ import _ from 'lodash';
 import { Shaped, ShapeVariations } from '@/models/common';
 import { PuzzleArea } from '@/models/PuzzleArea';
 import { PuzzleElement } from '@/models/PuzzleElement';
-import { PuzzleSolution, SolutionProgress } from '@/models/PuzzleSolution';
+import {
+	PuzzleSolution,
+	SolutionOptions,
+	SolutionProgress,
+} from '@/models/PuzzleSolution';
 
-import { solutionAccuracy } from './game';
 import {
 	flipX,
 	flipY,
@@ -49,7 +52,6 @@ export function initSolution(
 	return {
 		area: area,
 		unsolved: variations,
-		steps: 0,
 		isFinal: false,
 	};
 }
@@ -69,28 +71,39 @@ function prepareFlipped(variations: Shaped[], variation: Shaped) {
 	pushIfNotExists(variations, flippedY);
 }
 
-export function prepareVariations(element: Shaped) {
-	const result: ShapeVariations = {
-		variations: [element, flipX(element)],
-	};
-
+export function prepareVariations(element: Shaped): ShapeVariations {
+	const variations = [element];
 	for (let i = 0; i < 3; i++) {
-		const rotated = rotateCW(result.variations[i]);
-		pushIfNotExists(result.variations, rotated);
-
-		prepareFlipped(result.variations, rotated);
+		const original = variations[i];
+		if (original) {
+			const rotated = rotateCW(original);
+			pushIfNotExists(variations, rotated);
+		}
 	}
 
-	return result;
+	const flipped: Shaped[] = [];
+	for (let i = 0; i < variations.length; i++) {
+		prepareFlipped(flipped, variations[i]);
+	}
+
+	for (let i = 0; i < flipped.length; i++) {
+		pushIfNotExists(variations, flipped[i]);
+	}
+
+	return {
+		variations: variations,
+	};
 }
 
 export function placePuzzleElement(
 	area: PuzzleArea,
-	element: Shaped
+	element: Shaped,
+	progress?: SolutionProgress | undefined
 ): PuzzleArea[] {
 	const result: PuzzleArea[] = [];
 	for (let x = 0; x < area.width - 1; x++) {
 		for (let y = 0; y < area.height - 1; y++) {
+			if (progress) progress.steps++;
 			if (element.shape[0][0] > -1 && area.shape[y][x] > -1) continue;
 			if (
 				element.shape[0][1] > -1 &&
@@ -118,10 +131,26 @@ export function placePuzzleElement(
 	return result;
 }
 
+function checkTimeout({ start, timeout }: SolutionOptions) {
+	return Date.now() - start > timeout;
+}
+
 export function solvePuzzle(
 	solution: PuzzleSolution,
-	progress: SolutionProgress
+	progress: SolutionProgress,
+	options?: SolutionOptions | undefined
 ) {
+	const areaSize = solution.area.width * solution.area.height;
+	const elementsSize = _.sum(
+		solution.unsolved.map((element) => getFlatSize(element.variations[0]))
+	);
+
+	if (elementsSize > areaSize) {
+		progress.message = 'Puzzle unsolvable. Elements area is too big';
+		progress.onProgress(solution);
+		return;
+	}
+
 	if (solution.isFinal) {
 		progress.solution = solution;
 		progress.onProgress(solution);
@@ -139,14 +168,19 @@ export function solvePuzzle(
 
 	const variations = solution.unsolved[0];
 	const unsolved = solution.unsolved.filter((val, index) => index != 0);
-	const step = solution.steps + 1;
 
 	for (let i = 0; i < variations.variations.length; i++) {
 		if (progress.solution.isFinal) return;
 
+		if (options && checkTimeout(options)) {
+			progress.onTimeout();
+			return;
+		}
+
 		const areas = placePuzzleElement(
 			solution.area,
-			variations.variations[i]
+			variations.variations[i],
+			progress
 		);
 
 		if (areas.length > 0) {
@@ -156,11 +190,10 @@ export function solvePuzzle(
 				const iSolution: PuzzleSolution = {
 					area: areas[j],
 					unsolved: unsolved,
-					steps: step,
-					isFinal: unsolved.length == solutionAccuracy,
+					isFinal: unsolved.length == (options?.accuracy ?? 0),
 				};
 
-				solvePuzzle(iSolution, progress);
+				solvePuzzle(iSolution, progress, options);
 			}
 		}
 	}

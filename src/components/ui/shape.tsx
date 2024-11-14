@@ -1,13 +1,14 @@
 import * as React from 'react';
 
+import { CellType } from '@/models/common';
+import { PuzzleElement } from '@/models/PuzzleElement';
+
 import { blockSizePx, blockSpacePx, maxElementWidthN } from '@/lib/game';
 import {
 	expandToLength,
 	getMaxElementHeigthPx,
 	getMaxElementWidthPx,
 } from '@/lib/geometry';
-import { CellType } from '@/models/common';
-import { PuzzleElement } from '@/models/PuzzleElement';
 
 export interface PuzzleElementShapeProps {
 	element: PuzzleElement;

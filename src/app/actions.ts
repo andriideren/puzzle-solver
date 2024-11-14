@@ -1,30 +1,76 @@
 'use server';
-import { getPredefinedArea, getPredefinedElements } from '@/lib/game';
-import { initSolution, solvePuzzle } from '@/lib/solver';
+import { PuzzleSet } from '@/models/PuzzleSet';
 import { SolutionProgress, SolutionResponse } from '@/models/PuzzleSolution';
+
+import {
+	createArea,
+	getPredefinedSet,
+	maxTimeout,
+	solutionAccuracy,
+} from '@/lib/game';
+import { initSolution, solvePuzzle } from '@/lib/solver';
 
 export async function findSolution(
 	prevState: SolutionResponse,
 	formData: FormData
 ) {
 	const result = await new Promise<SolutionResponse>((resolve) => {
-		const receivedId = formData.get('set_id')?.toString();
-		const setId = parseInt(receivedId ?? '0');
-		const startSolution = initSolution(
-			getPredefinedArea(),
-			getPredefinedElements(setId)
-		);
+		try {
+			const receivedId = formData.get('set_id')?.toString();
+			const setId = parseInt(receivedId ?? '-1');
+			let gameSet: PuzzleSet | null | undefined = null;
+			if (setId > -1) {
+				gameSet = getPredefinedSet(setId);
+			} else {
+				const setData = formData.get('game_set')?.toString();
+				if (setData) {
+					gameSet = JSON.parse(setData);
+				}
+			}
 
-		const progress: SolutionProgress = {
-			solution: startSolution,
-			onProgress: (solution) => {
-				if (solution.isFinal) resolve({ solution: solution });
-			},
-		};
+			if (gameSet && gameSet.elements && gameSet.elements.length > 0) {
+				const startSolution = initSolution(
+					createArea(gameSet.width, gameSet.height),
+					gameSet.elements
+				);
 
-		solvePuzzle(startSolution, progress);
+				const progress: SolutionProgress = {
+					solution: startSolution,
+					steps: 0,
+					onProgress: (solution) => {
+						if (solution.isFinal)
+							resolve({
+								elements: gameSet.elements,
+								solution: solution,
+								steps: progress.steps,
+							});
+					},
+					onTimeout: () => {
+						resolve({
+							message: 'Not solved. Cancelled due to timeout',
+						});
+					},
+				};
 
-		resolve({ solution: progress.solution });
+				solvePuzzle(startSolution, progress, {
+					start: Date.now(),
+					timeout: maxTimeout,
+					accuracy: solutionAccuracy,
+				});
+				resolve({
+					elements: gameSet.elements,
+					solution: progress.solution,
+					steps: progress.steps,
+				});
+			} else {
+				resolve({ message: 'Not solved. Game set not found' });
+			}
+		} catch (error) {
+			resolve({
+				message:
+					error?.toString() ?? 'Not solved. Internal server error',
+			});
+		}
 	});
 
 	return result;

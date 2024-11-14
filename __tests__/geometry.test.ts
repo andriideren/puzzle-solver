@@ -1,3 +1,6 @@
+import { Shaped } from '@/models/common';
+import { PuzzleArea } from '@/models/PuzzleArea';
+
 import {
 	flipX,
 	flipY,
@@ -6,8 +9,7 @@ import {
 	mergeShapes,
 	rotateCW,
 } from '@/lib/geometry';
-import { Shaped } from '@/models/common';
-import { PuzzleArea } from '@/models/PuzzleArea';
+
 import { describe, expect, test } from '@jest/globals';
 
 describe('geometry module', () => {

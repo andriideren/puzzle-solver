@@ -1,11 +1,25 @@
 'use client';
-import { Loader2 } from 'lucide-react';
-import React, { useActionState, useEffect, useMemo, useState } from 'react';
+import React, { useActionState, useEffect, useRef, useState } from 'react';
 import { scroller } from 'react-scroll';
 
 import Image from 'next/image';
 
-import { PuzzleAreaShape } from '@/components/ui/area';
+import { SolutionResponse } from '@/models/PuzzleSolution';
+
+import {
+	defaultSetId,
+	emptySolution,
+	getPredefinedSet,
+	maxElementHeightN,
+	maxElementWidthN,
+	minElementWidthN,
+	predefinedAreaHeight,
+	predefinedAreaWidth,
+	sets,
+} from '@/lib/game';
+import { generateElementsSet } from '@/lib/generator';
+
+import { AnimatePuzzleArea, PuzzleAreaShape } from '@/components/ui/area';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -24,24 +38,23 @@ import {
 } from '@/components/ui/select';
 import { PuzzleElementPreview } from '@/components/ui/shape';
 
-import { emptySolution, getPredefinedElements, sets } from '@/lib/game';
-import { mergeToArea } from '@/lib/geometry';
-import { SolutionResponse } from '@/models/PuzzleSolution';
-
 import { findSolution } from './actions';
+
+import { Loader2, RefreshCw } from 'lucide-react';
 
 const initialState: SolutionResponse = {
 	solution: emptySolution,
+	elements: [],
 };
 
 export default function Home() {
-	const [setId, setSetId] = useState(1);
-	const [solvedAt, setSolvedAt] = useState(0);
-	const [animateX, setX] = useState(0);
-	const [animateY, setY] = useState(0);
-	const elements = useMemo(() => getPredefinedElements(setId), [setId]);
-
+	const [setId, setSetId] = useState(defaultSetId);
+	const [solvedAt, setSolvedAt] = useState(-1);
 	const [timer, setTimer] = useState(0);
+	const [gameSet, setGameSet] = useState(getPredefinedSet(defaultSetId));
+	const [gameSetJson, setGameSetJson] = useState('');
+
+	const formRef = useRef<HTMLFormElement>(null);
 
 	const [state, formAction, isPending] = useActionState(
 		findSolution,
@@ -53,19 +66,6 @@ export default function Home() {
 		if (isPending) {
 			intervalId = setInterval(() => {
 				setTimer((tValue) => tValue + 0.2);
-				setX((xVal) => {
-					if (xVal < emptySolution.area.width - 4) {
-						return xVal + 1;
-					}
-
-					setY((yVal) => {
-						if (yVal < emptySolution.area.height - 2)
-							return yVal + 1;
-						return 0;
-					});
-
-					return 0;
-				});
 			}, 200);
 		} else {
 			setSolvedAt(Date.now());
@@ -75,28 +75,33 @@ export default function Home() {
 		};
 	}, [isPending]);
 
-	const onReset = () => {
+	const resetGame = () => {
 		state.solution = emptySolution;
+		state.steps = 0;
+		state.message = '';
 
-		setSolvedAt(0);
+		setSolvedAt(-1);
 		setTimer(0);
-		setX(0);
-		setY(0);
 	};
 
-	const gameArea = isPending
-		? mergeToArea(
-				{
-					shape: [
-						[1, 2, 3, -1],
-						[-1, 6, 7, 8],
-					],
-				},
-				emptySolution.area,
-				animateX,
-				animateY
-			)
-		: (state?.solution?.area ?? emptySolution.area);
+	const generateRandomSet = () => {
+		setSetId(-1);
+		const generatedSet = generateElementsSet(
+			minElementWidthN,
+			maxElementWidthN,
+			maxElementHeightN,
+			predefinedAreaWidth,
+			predefinedAreaHeight
+		);
+		setGameSet(generatedSet);
+		setGameSetJson(JSON.stringify(generatedSet));
+	};
+
+	const gameArea = state?.solution?.area ?? emptySolution.area;
+
+	const solvedInSteps = state?.steps ?? 0;
+	const hasError =
+		state?.message?.length || state?.solution?.unsolved?.length;
 
 	return (
 		<div className="items-center justify-items-center min-h-screen p-6 gap-16 font-[family-name:var(--font-geist-sans)]">
@@ -108,7 +113,7 @@ export default function Home() {
 						</CardTitle>
 						<CardDescription>
 							{
-								'Demo app solves geometric puzzle game using decisions tree algorithm'
+								'Demo app solves geometric puzzle game using Greedy Backtracking algorithm (read About for more details)'
 							}
 						</CardDescription>
 					</CardHeader>
@@ -118,34 +123,63 @@ export default function Home() {
 								<h4 className="text-xl font-semibold tracking-tight">
 									{'Puzzle Elements'}
 								</h4>
-								<Badge>{elements.length}</Badge>
+								<Badge>{gameSet.elements.length}</Badge>
 							</div>
-							<Select
-								value={setId.toString()}
-								onValueChange={(selected) => {
-									setSetId(parseInt(selected));
-								}}
-							>
-								<SelectTrigger className="w-full md:w-[200px]">
-									<SelectValue placeholder="Select puzzle set" />
-								</SelectTrigger>
-								<SelectContent>
-									{[
-										...sets.map((set, index) => (
-											<SelectItem
-												key={`set_${index}`}
-												value={`${index}`}
-											>
-												{`Set #${index + 1}`}
-											</SelectItem>
-										)),
-									]}
-								</SelectContent>
-							</Select>
+							<div className="flex flex-row gap-2 items-center">
+								{setId === -1 ? (
+									<Button
+										variant={'outline'}
+										disabled={isPending}
+										onClick={generateRandomSet}
+									>
+										<RefreshCw />
+										{'Generate new'}
+									</Button>
+								) : (
+									<></>
+								)}
+								<Select
+									value={setId.toString()}
+									onValueChange={(selected) => {
+										const selectedId = parseInt(selected);
+										if (selectedId > -1) {
+											setSetId(selectedId);
+											setGameSet(
+												getPredefinedSet(selectedId)
+											);
+											setGameSetJson('');
+										} else {
+											generateRandomSet();
+										}
+									}}
+								>
+									<SelectTrigger className="w-full md:w-[200px]">
+										<SelectValue placeholder="Select puzzle set" />
+									</SelectTrigger>
+									<SelectContent>
+										{[
+											...sets.map((set, index) => (
+												<SelectItem
+													key={`set_${index}`}
+													value={`${index}`}
+												>
+													{`Set #${index + 1}`}
+												</SelectItem>
+											)),
+										]}
+										<SelectItem
+											key={`set_custom`}
+											value={'-1'}
+										>
+											{'Random set'}
+										</SelectItem>
+									</SelectContent>
+								</Select>
+							</div>
 						</div>
 						<div className="py-2 grid grid-cols-5 gap-4">
 							{[
-								...elements.map((element, ei) => (
+								...gameSet.elements.map((element, ei) => (
 									<PuzzleElementPreview
 										element={element}
 										key={`shape${ei}`}
@@ -166,28 +200,37 @@ export default function Home() {
 								) : (
 									<></>
 								)}
-								<h4 className="text-xl font-semibold tracking-tight">
-									{solvedAt || isPending
-										? `${isPending ? 'Solving ' : 'Solved in '} ${timer.toFixed(2)}s`
+								<h4
+									className={`text-xl font-semibold tracking-tight ${state?.solution?.isFinal ? 'text-green-700' : hasError ? 'text-red-600' : ''}`}
+								>
+									{solvedAt >= 0 || isPending
+										? `${isPending ? 'Solving ' : `${state?.solution?.isFinal ? 'Solved' : 'Finished'} in `} ${timer.toFixed(2)}s${solvedInSteps > 0 ? ` in ${solvedInSteps} steps` : ''}`
 										: 'Not solved yet'}
 								</h4>
+								{hasError ? (
+									<h4 className="text-xl text-red-600 font-semibold tracking-tight">
+										{state?.message ??
+											'Puzzle cannot be solved'}
+									</h4>
+								) : (
+									<></>
+								)}
 							</div>
 							<div className="flex flex-row gap-2 pt-1">
 								<Button
 									disabled={isPending}
 									type={'button'}
 									variant={'secondary'}
-									onClick={() => {
-										onReset();
-									}}
+									onClick={resetGame}
 								>
 									{'Reset'}
 								</Button>
 								<form
+									ref={formRef}
 									className="flex flex-row gap-2"
 									action={formAction}
 									onSubmit={() => {
-										onReset();
+										resetGame();
 
 										scroller.scrollTo('puzzle-area', {
 											duration: 300,
@@ -201,6 +244,12 @@ export default function Home() {
 										id="set_id"
 										name="set_id"
 										value={setId}
+									/>
+									<input
+										type="hidden"
+										id="game_set"
+										name="game_set"
+										value={gameSetJson}
 									/>
 									{isPending ? (
 										<Button disabled>
@@ -216,14 +265,14 @@ export default function Home() {
 							</div>
 						</div>
 						<div className="py-2">
-							{gameArea ? (
+							{isPending ? (
+								<AnimatePuzzleArea area={gameArea} />
+							) : (
 								<PuzzleAreaShape
 									key={`area_${solvedAt}`}
 									area={gameArea}
-									elements={elements}
+									elements={state?.elements ?? []}
 								/>
-							) : (
-								<></>
 							)}
 						</div>
 					</CardContent>
