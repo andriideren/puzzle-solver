@@ -1,5 +1,12 @@
 # About project
 This demo application was implemented to solve geometric puzzles using backtracking algorithm with additional "greedy" strategy to optimize practical computing time
+  
+**Short rules & game features**
+  
++ The pieces must be fully placed and can not overlap on each other
++ The full game area must be covered
++ Application will return solution, detect if solution is impossible or stop by timeout if max timeout reached
++ Some fun predefined sets can be used or random set can be generated. Generated sets are full random so can be unsolvable
 
 # Implementation
 To solve puzzle **Greedy Backtracking** algorithm was implemented
@@ -27,9 +34,9 @@ Next, recursive backtracking algorithm is applied trying to place shapes into ar
   
 But we can estimate an upper bound based on the possible placements and branches created in the recursive process.
   
-Assuming there is P possible placements for each shape, considering recursive branching of backtracking algorithm the worst-case complexity for n shapes is `O(P<sup>n</sup>)`
+Assuming there is P possible placements for each shape, considering recursive branching of backtracking algorithm the worst-case complexity for n shapes is <code>O(P<sup>n</sup>)</code>
   
-So total computational upper-bound complexity is `O(n log n) + O(P<sup>n</sup>)`
+So total computational upper-bound complexity is <code>O(n log n) + O(P<sup>n</sup>)</code>
   
 In most scenarios initial sorting will greatly improve computational efficiency for small complexity increase.
 
