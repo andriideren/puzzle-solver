@@ -171,7 +171,7 @@ export default function AboutModal() {
 															{')'}
 														</code>
 														{
-															'But in most scenarios initial sorting will greatly improve computational efficiency for small payout.'
+															'In most scenarios initial sorting will greatly improve computational efficiency for small complexity increase.'
 														}
 													</p>
 												</div>
