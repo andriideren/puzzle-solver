@@ -11,7 +11,7 @@ This demo application was implemented to solve geometric puzzles using backtrack
 # Implementation
 To solve puzzle **Greedy Backtracking** algorithm was implemented
 
-**How it works:**
+**How it works**
   
 First, we re-order shapes from largest to smallest to try most "greedy" placement first.
   
