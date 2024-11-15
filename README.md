@@ -2,7 +2,7 @@
 This demo application was implemented to solve geometric puzzles using backtracking algorithm with additional "greedy" strategy to optimize practical computing time
 
 # Prerequisites
-To build and run project `Node.js v20+` and `npm` are required
+To build and run project [Node.js v18.18 or later](https://nodejs.org/) and `npm` are required
 
 # How to run
 To get started first clone repository using terminal
